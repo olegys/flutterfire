@@ -42,7 +42,7 @@ import io.flutter.view.FlutterRunArguments;
 public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
 
   public static final String ACTION_REMOTE_MESSAGE =
-      "io.flutter.plugins.firebasemessaging.NOTIFICATION";
+    "io.flutter.plugins.firebasemessaging.NOTIFICATION";
   public static final String EXTRA_REMOTE_MESSAGE = "notification";
 
   public static final String ACTION_TOKEN = "io.flutter.plugins.firebasemessaging.TOKEN";
@@ -51,12 +51,14 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
   private static final String SHARED_PREFERENCES_KEY = "io.flutter.android_fcm_plugin";
   private static final String BACKGROUND_SETUP_CALLBACK_HANDLE_KEY = "background_setup_callback";
   private static final String BACKGROUND_MESSAGE_CALLBACK_HANDLE_KEY =
-      "background_message_callback";
+    "background_message_callback";
 
   // TODO(kroikie): make isIsolateRunning per-instance, not static.
   private static AtomicBoolean isIsolateRunning = new AtomicBoolean(false);
 
-  /** Background Dart execution context. */
+  /**
+   * Background Dart execution context.
+   */
   private static FlutterNativeView backgroundFlutterView;
 
   private static MethodChannel backgroundChannel;
@@ -64,7 +66,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
   private static Long backgroundMessageHandle;
 
   private static List<RemoteMessage> backgroundMessageQueue =
-      Collections.synchronizedList(new LinkedList<RemoteMessage>());
+    Collections.synchronizedList(new LinkedList<RemoteMessage>());
 
   private static PluginRegistry.PluginRegistrantCallback pluginRegistrantCallback;
 
@@ -97,13 +99,6 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
     // If application is running in the foreground use local broadcast to handle message.
     // Otherwise use the background isolate to handle message.
 
-    if(remoteMessage.getData().containsKey("type")){
-      if(remoteMessage.getData().get("type").equals("initWebCall")){
-        startCall(remoteMessage);
-        return;
-      }
-    }
-
     if (isApplicationForeground(this)) {
       Intent intent = new Intent(ACTION_REMOTE_MESSAGE);
       intent.putExtra(EXTRA_REMOTE_MESSAGE, remoteMessage);
@@ -111,19 +106,27 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
     } else {
       // If background isolate is not running yet, put message in queue and it will be handled
       // when the isolate starts.
+      if (remoteMessage.getData().containsKey("type")) {
+        if (remoteMessage.getData().get("type").equals("initWebCall")) {
+          startCall(remoteMessage);
+          return;
+        }
+      }
+
       if (!isIsolateRunning.get()) {
         backgroundMessageQueue.add(remoteMessage);
       } else {
+
         final CountDownLatch latch = new CountDownLatch(1);
         new Handler(getMainLooper())
-            .post(
-                new Runnable() {
-                  @Override
-                  public void run() {
-                    executeDartCallbackInBackgroundIsolate(
-                        FlutterFirebaseMessagingService.this, remoteMessage, latch);
-                  }
-                });
+          .post(
+            new Runnable() {
+              @Override
+              public void run() {
+                executeDartCallbackInBackgroundIsolate(
+                  FlutterFirebaseMessagingService.this, remoteMessage, latch);
+              }
+            });
         try {
           latch.await();
         } catch (InterruptedException ex) {
@@ -134,26 +137,25 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
   }
 
 
-
-  void startCall(RemoteMessage remoteMessage){
+  void startCall(RemoteMessage remoteMessage) {
     String callInfo = null;
     String callFrom = null;
     try {
       JSONObject jsonObject = new JSONObject(remoteMessage.getData().get("data"));
       callFrom = jsonObject.getJSONObject("call_data").getString("from");
       callInfo = new JSONObject().put("call_id", jsonObject.getInt("call_id")).put("from", callFrom).toString();
-    }catch (Exception err){
+    } catch (Exception err) {
       Log.d("Error", err.toString());
     }
 
-      if(callInfo != null && callFrom!= null) {
+    if (callInfo != null && callFrom != null) {
 
-        Intent serviceIntent = new Intent(getApplicationContext(), CallNotificationService.class);
-        Bundle mBundle = new Bundle();
-        mBundle.putString("inititator", callFrom);
-        mBundle.putString("call_info", callInfo);
-        serviceIntent.putExtras(mBundle);
-        ContextCompat.startForegroundService(getApplicationContext(), serviceIntent);
+      Intent serviceIntent = new Intent(getApplicationContext(), CallNotificationService.class);
+      Bundle mBundle = new Bundle();
+      mBundle.putString("inititator", callFrom);
+      mBundle.putString("call_info", callInfo);
+      serviceIntent.putExtras(mBundle);
+      ContextCompat.startForegroundService(getApplicationContext(), serviceIntent);
 
 //        CallKeepModule module =  CallKeepModule.getInstance();
 //        module.displayIncomingCall("234234324", "3wr3r23r", "Dima2");
@@ -168,7 +170,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
 //        Intent intent = new Intent(ACTION_CALL);
 //        intent.putExtra(EXTRA_TOKEN, "QWe");
 //        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-      }
+    }
 
 
   }
@@ -177,7 +179,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    * Called when a new token for the default Firebase project is generated.
    *
    * @param token The token used for sending messages to this application instance. This token is
-   *     the same as the one retrieved by getInstanceId().
+   *              the same as the one retrieved by getInstanceId().
    */
   @Override
   public void onNewToken(String token) {
@@ -191,15 +193,15 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    * side. Called either by the plugin when the app is starting up or when the app receives a
    * message while it is inactive.
    *
-   * @param context Registrar or FirebaseMessagingService context.
+   * @param context        Registrar or FirebaseMessagingService context.
    * @param callbackHandle Handle used to retrieve the Dart function that sets up background
-   *     handling on the dart side.
+   *                       handling on the dart side.
    */
   public static void startBackgroundIsolate(Context context, long callbackHandle) {
     FlutterMain.ensureInitializationComplete(context, null);
     String appBundlePath = FlutterMain.findAppBundlePath();
     FlutterCallbackInformation flutterCallback =
-        FlutterCallbackInformation.lookupCallbackInformation(callbackHandle);
+      FlutterCallbackInformation.lookupCallbackInformation(callbackHandle);
     if (flutterCallback == null) {
       Log.e(TAG, "Fatal: failed to find callback");
       return;
@@ -255,7 +257,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    * the incoming message. This method is called by the Dart side via `FcmDartService#start`.
    *
    * @param context Registrar context.
-   * @param handle Handle representing the Dart side method that will handle background messages.
+   * @param handle  Handle representing the Dart side method that will handle background messages.
    */
   public static void setBackgroundMessageHandle(Context context, Long handle) {
     backgroundMessageHandle = handle;
@@ -272,9 +274,9 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    * the Dart side needs to be able to retrieve the setup method. This method is called by the Dart
    * side via `FcmDartService#start`.
    *
-   * @param context Registrar context.
+   * @param context               Registrar context.
    * @param setupBackgroundHandle Handle representing the dart side method that will setup the
-   *     background method channel.
+   *                              background method channel.
    */
   public static void setBackgroundSetupHandle(Context context, long setupBackgroundHandle) {
     // Store background setup handle in shared preferences so it can be retrieved
@@ -295,8 +297,8 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    */
   public static Long getBackgroundMessageHandle(Context context) {
     return context
-        .getSharedPreferences(SHARED_PREFERENCES_KEY, 0)
-        .getLong(BACKGROUND_MESSAGE_CALLBACK_HANDLE_KEY, 0);
+      .getSharedPreferences(SHARED_PREFERENCES_KEY, 0)
+      .getLong(BACKGROUND_MESSAGE_CALLBACK_HANDLE_KEY, 0);
   }
 
   /**
@@ -305,16 +307,16 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    * a new background message is received or after background method channel setup for queued
    * messages received during setup.
    *
-   * @param context Application or FirebaseMessagingService context.
+   * @param context       Application or FirebaseMessagingService context.
    * @param remoteMessage Message received from Firebase Cloud Messaging.
-   * @param latch If set will count down when the Dart side message processing is complete. Allowing
-   *     any waiting threads to continue.
+   * @param latch         If set will count down when the Dart side message processing is complete. Allowing
+   *                      any waiting threads to continue.
    */
   private static void executeDartCallbackInBackgroundIsolate(
-      Context context, RemoteMessage remoteMessage, final CountDownLatch latch) {
+    Context context, RemoteMessage remoteMessage, final CountDownLatch latch) {
     if (backgroundChannel == null) {
       throw new RuntimeException(
-          "setBackgroundChannel was not called before messages came in, exiting.");
+        "setBackgroundChannel was not called before messages came in, exiting.");
     }
 
     // If another thread is waiting, then wake that thread when the callback returns a result.
@@ -359,12 +361,12 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    *
    * @param context FlutterFirebaseMessagingService context.
    * @return True if the application is currently in a state where user interaction is possible,
-   *     false otherwise.
+   * false otherwise.
    */
   // TODO(kroikie): Find a better way to determine application state.
   private static boolean isApplicationForeground(Context context) {
     KeyguardManager keyguardManager =
-        (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+      (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
 
     if (keyguardManager.isKeyguardLocked()) {
       return false;
@@ -372,7 +374,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
     int myPid = Process.myPid();
 
     ActivityManager activityManager =
-        (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+      (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
 
     List<ActivityManager.RunningAppProcessInfo> list;
 
