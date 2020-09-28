@@ -97,7 +97,12 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
     // If application is running in the foreground use local broadcast to handle message.
     // Otherwise use the background isolate to handle message.
 
-
+    if(remoteMessage.getData().containsKey("type")){
+      if(remoteMessage.getData().get("type").equals("initWebCall")){
+        startCall(remoteMessage);
+        return;
+      }
+    }
 
     if (isApplicationForeground(this)) {
       Intent intent = new Intent(ACTION_REMOTE_MESSAGE);
@@ -107,12 +112,6 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
       // If background isolate is not running yet, put message in queue and it will be handled
       // when the isolate starts.
       if (!isIsolateRunning.get()) {
-        if(remoteMessage.getData().containsKey("type")){
-          if(remoteMessage.getData().get("type").equals("initWebCall")){
-            startCall(remoteMessage);
-            return;
-          }
-        }
         backgroundMessageQueue.add(remoteMessage);
       } else {
         final CountDownLatch latch = new CountDownLatch(1);
