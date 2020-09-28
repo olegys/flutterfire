@@ -9,18 +9,19 @@ import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Process;
 import android.util.Log;
+
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.PluginRegistry;
-import io.flutter.view.FlutterCallbackInformation;
-import io.flutter.view.FlutterMain;
-import io.flutter.view.FlutterNativeView;
-import io.flutter.view.FlutterRunArguments;
+
+import org.json.JSONObject;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,6 +30,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.PluginRegistry;
+import io.flutter.plugins.firebasemessaging.nexel.CallNotificationService;
+import io.flutter.view.FlutterCallbackInformation;
+import io.flutter.view.FlutterMain;
+import io.flutter.view.FlutterNativeView;
+import io.flutter.view.FlutterRunArguments;
 
 public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
 
@@ -87,6 +96,14 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
   public void onMessageReceived(final RemoteMessage remoteMessage) {
     // If application is running in the foreground use local broadcast to handle message.
     // Otherwise use the background isolate to handle message.
+
+    if(remoteMessage.getData().containsKey("type")){
+      if(remoteMessage.getData().get("type").equals("initWebCall")){
+        startCall(remoteMessage);
+        return;
+      }
+    }
+
     if (isApplicationForeground(this)) {
       Intent intent = new Intent(ACTION_REMOTE_MESSAGE);
       intent.putExtra(EXTRA_REMOTE_MESSAGE, remoteMessage);
@@ -114,6 +131,46 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
         }
       }
     }
+  }
+
+
+
+  void startCall(RemoteMessage remoteMessage){
+    String callInfo = null;
+    String callFrom = null;
+    try {
+      JSONObject jsonObject = new JSONObject(remoteMessage.getData().get("data"));
+      callFrom = jsonObject.getJSONObject("call_data").getString("from");
+      callInfo = new JSONObject().put("call_id", jsonObject.getInt("call_id")).put("from", callFrom).toString();
+    }catch (Exception err){
+      Log.d("Error", err.toString());
+    }
+
+      if(callInfo != null && callFrom!= null) {
+
+        Intent serviceIntent = new Intent(getApplicationContext(), CallNotificationService.class);
+        Bundle mBundle = new Bundle();
+        mBundle.putString("inititator", callFrom);
+        mBundle.putString("call_info", callInfo);
+        serviceIntent.putExtras(mBundle);
+        ContextCompat.startForegroundService(getApplicationContext(), serviceIntent);
+
+//        CallKeepModule module =  CallKeepModule.getInstance();
+//        module.displayIncomingCall("234234324", "3wr3r23r", "Dima2");
+
+//        if(!isApplicationForeground(this) && !isIsolateRunning.get()){
+//
+//        } else {
+//
+//        }
+
+
+//        Intent intent = new Intent(ACTION_CALL);
+//        intent.putExtra(EXTRA_TOKEN, "QWe");
+//        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+      }
+
+
   }
 
   /**

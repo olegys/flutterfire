@@ -11,5 +11,20 @@
       <meta-data android:name="com.google.firebase.components:io.flutter.plugins.firebasemessaging.FlutterFirebaseAppRegistrar"
                  android:value="com.google.firebase.components.ComponentRegistrar" />
     </service>
+
+
+
+
+
+    <service android:name="io.flutter.plugins.firebasemessaging.nexel.CallNotificationService"
+      android:showOnLockScreen="true"/>
+    <receiver
+      android:name="io.flutter.plugins.firebasemessaging.nexel.CallNotificationActionReceiver"
+      android:enabled="true">
+      <intent-filter android:priority="999">
+        <action android:name="ConstantApp.CALL_RECEIVE_ACTION" />
+        <action android:name="ConstantApp.CALL_CANCEL_ACTION"/>
+      </intent-filter>
+    </receiver>
   </application>
 </manifest>
