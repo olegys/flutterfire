@@ -99,6 +99,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
     // If application is running in the foreground use local broadcast to handle message.
     // Otherwise use the background isolate to handle message.
 
+    Log.e(TAG, "onMessageReceived: --------> NEXEN push NOTIFICATION" + remoteMessage.getData().toString());
     if (isApplicationForeground(this)) {
       Intent intent = new Intent(ACTION_REMOTE_MESSAGE);
       intent.putExtra(EXTRA_REMOTE_MESSAGE, remoteMessage);

@@ -56,14 +56,14 @@ public class CallNotificationActionReceiver extends BroadcastReceiver {
       if (checkAppPermissions()) {
         Intent intentCallReceive = FlutterActivity
           .withNewEngine()
-          .initialRoute("/splash?" + callInfo).build(context).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+          .initialRoute("/splash?" + callInfo +"&answered=true").build(context).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intentCallReceive.putExtra("Call", "incoming");
         intentCallReceive.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         mContext.startActivity(intentCallReceive);
       } else {
         Intent intent = FlutterActivity
           .withNewEngine()
-          .initialRoute("/splash?" + callInfo).build(context);
+          .initialRoute("/splash?" + callInfo+"&answered=true").build(context);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra("CallFrom", "call from push");
         mContext.startActivity(intent);
@@ -74,7 +74,7 @@ public class CallNotificationActionReceiver extends BroadcastReceiver {
       // show ringing activity when phone is locked
       Intent intent = FlutterActivity
         .withNewEngine()
-        .initialRoute("/splash?" + callInfo).build(context).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        .initialRoute("/splash?" + callInfo+"&answered=false").build(context).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
       mContext.startActivity(intent);

@@ -93,7 +93,6 @@ public class CallNotificationService extends Service {
 
     startForeground(NOTIFICATION_ID, incomingCallNotification);
 
-
     return START_STICKY;
   }
 
@@ -117,7 +116,6 @@ public class CallNotificationService extends Service {
 
   public void createChannel() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
       Uri ringUri = Settings.System.DEFAULT_RINGTONE_URI;
       NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
       channel.setDescription("Call Notifications");
@@ -127,8 +125,6 @@ public class CallNotificationService extends Service {
           .setLegacyStreamType(AudioManager.STREAM_RING)
           .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION).build());
       Objects.requireNonNull(this.getSystemService(NotificationManager.class)).createNotificationChannel(channel);
-
-
     }
   }
 }
