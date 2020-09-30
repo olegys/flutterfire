@@ -37,13 +37,16 @@ public class CallNotificationService extends Service {
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
     String callInfo = "";
-    String name = "", callType = "";
+    String name = "", callType = "", callId = "";
+
     int NOTIFICATION_ID = 120;
 
     if (intent != null && intent.getExtras() != null) {
 
       callInfo = intent.getExtras().getString("call_info");
       name = intent.getExtras().getString("inititator");
+      callId = intent.getExtras().getString("call_id");
+
 
     }
     Intent receiveCallAction = new Intent(this, io.flutter.plugins.firebasemessaging.nexel.CallNotificationActionReceiver.class);
@@ -51,6 +54,7 @@ public class CallNotificationService extends Service {
     receiveCallAction.putExtra("ConstantApp.CALL_RESPONSE_ACTION_KEY", "ConstantApp.CALL_RECEIVE_ACTION");
     receiveCallAction.putExtra("ACTION_TYPE", "RECEIVE_CALL");
     receiveCallAction.putExtra("CALL_INFO", callInfo);
+    receiveCallAction.putExtra("CALL_ID", callId);
     receiveCallAction.putExtra("NOTIFICATION_ID", NOTIFICATION_ID);
     receiveCallAction.setAction("RECEIVE_CALL");
 
@@ -59,12 +63,14 @@ public class CallNotificationService extends Service {
     cancelCallAction.putExtra("ACTION_TYPE", "CANCEL_CALL");
     cancelCallAction.putExtra("CALL_INFO", callInfo);
     cancelCallAction.putExtra("NOTIFICATION_ID", NOTIFICATION_ID);
+    cancelCallAction.putExtra("CALL_ID", callId);
     cancelCallAction.setAction("CANCEL_CALL");
 
     Intent callDialogAction = new Intent(this, io.flutter.plugins.firebasemessaging.nexel.CallNotificationActionReceiver.class);
     callDialogAction.putExtra("ACTION_TYPE", "DIALOG_CALL");
     callDialogAction.putExtra("CALL_INFO", callInfo);
     callDialogAction.putExtra("NOTIFICATION_ID", NOTIFICATION_ID);
+    callDialogAction.putExtra("CALL_ID", callId);
     callDialogAction.setAction("DIALOG_CALL");
 
     PendingIntent receiveCallPendingIntent = PendingIntent.getBroadcast(this, 1200, receiveCallAction, PendingIntent.FLAG_UPDATE_CURRENT);

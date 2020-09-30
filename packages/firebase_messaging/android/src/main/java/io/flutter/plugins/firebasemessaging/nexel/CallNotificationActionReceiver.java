@@ -4,11 +4,17 @@ import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
-import io.flutter.embedding.android.FlutterActivity;
+import io.flutter.plugins.firebasemessaging.retrofit.ApiManager;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class CallNotificationActionReceiver extends BroadcastReceiver {
@@ -25,10 +31,12 @@ public class CallNotificationActionReceiver extends BroadcastReceiver {
       action = intent.getStringExtra("ACTION_TYPE");
       String callInfo = "";
       callInfo = intent.getStringExtra("CALL_INFO");
+      String callId = "";
+      callId = intent.getStringExtra("CALL_ID");
 
 
       if (action != null && !action.equalsIgnoreCase("")) {
-        performClickAction(context, action, callInfo);
+        performClickAction(context, action, callInfo, callId);
       }
 
       // Close the notification after the click action is performed.
@@ -41,43 +49,56 @@ public class CallNotificationActionReceiver extends BroadcastReceiver {
 
   }
 
+  private void performClickAction(Context context, String action, String callInfo, String callId) {
 
-//                   .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-//                   .setFlags(Intent.FLAG_FROM_BACKGROUND)
+    if(action.equalsIgnoreCase("CANCEL_CALL")){
+
+      Log.e("########", "Receive CANCEL_CALL: with call id " +callId);
 
 
-//    FlutterActivity
-//            .withNewEngine()
-//            .initialRoute("/home").build(context)
 
-  private void performClickAction(Context context, String action, String callInfo) {
+      SharedPreferences sharedPref = context.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE);
+      String token = sharedPref.getString("flutter.USER_AUTH_TOKEN", "");
+
+      Log.e("########", "Receive CANCEL_CALL: with token " +token);
+
+
+      ApiManager.getInstance().getCallForId("Bearer "+token,callId).enqueue(new Callback<ResponseBody>() {
+        @Override
+        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+          Log.e("######", "onResponse: "+response.body());
+        }
+
+        @Override
+        public void onFailure(Call<ResponseBody> call, Throwable t) {
+          Log.e("######", "onFailure: "+t.getLocalizedMessage());
+
+        }
+      });
+
+    }
+
     if (action.equalsIgnoreCase("RECEIVE_CALL")) {
 
       if (checkAppPermissions()) {
-        Intent intentCallReceive = FlutterActivity
-          .withNewEngine()
-          .initialRoute("/splash?" + callInfo +"&answered=true").build(context).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intentCallReceive.putExtra("Call", "incoming");
-        intentCallReceive.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        mContext.startActivity(intentCallReceive);
+        Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+        intent.putExtra("route", "/splash?" + callInfo+"&answered=true");
+        context.startActivity(intent);
+//        intentCallReceive.putExtra("Call", "incoming");
+//        intentCallReceive.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
       } else {
-        Intent intent = FlutterActivity
-          .withNewEngine()
-          .initialRoute("/splash?" + callInfo+"&answered=true").build(context);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra("CallFrom", "call from push");
-        mContext.startActivity(intent);
+        Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+        intent.putExtra("route", "/splash?" + callInfo+"&answered=true");
+        context.startActivity(intent);
 
       }
     } else if (action.equalsIgnoreCase("DIALOG_CALL")) {
 
       // show ringing activity when phone is locked
-      Intent intent = FlutterActivity
-        .withNewEngine()
-        .initialRoute("/splash?" + callInfo+"&answered=false").build(context).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+      intent.putExtra("route", "/splash?" + callInfo+"&answered=false");
+      context.startActivity(intent);
 
-      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-      mContext.startActivity(intent);
 
 
     } else {
@@ -85,7 +106,11 @@ public class CallNotificationActionReceiver extends BroadcastReceiver {
       Intent it = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
       context.sendBroadcast(it);
     }
+
   }
+
+
+
 
   private Boolean checkAppPermissions() {
     return hasReadPermissions() && hasWritePermissions() && hasAudioPermissions();

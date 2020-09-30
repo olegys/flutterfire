@@ -107,11 +107,21 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
     } else {
       // If background isolate is not running yet, put message in queue and it will be handled
       // when the isolate starts.
-      if (remoteMessage.getData().containsKey("type")) {
-        if (remoteMessage.getData().get("type").equals("initWebCall")) {
-          startCall(remoteMessage);
-          return;
+      if (remoteMessage.getData().containsKey("voip") &&remoteMessage.getData().get("voip").equals("true") ) {
+        String type = "";
+        if(remoteMessage.getData().containsKey("type")){
+           type = remoteMessage.getData().get("type");
         }
+        if (type.equals("initWebCall")) {
+          startCall(remoteMessage);
+        } else if(type.equals("callAnswer") || type.equals("callEnd")){
+          Intent cancelCallAction = new Intent(this, io.flutter.plugins.firebasemessaging.nexel.CallNotificationActionReceiver.class);
+          cancelCallAction.putExtra("ConstantApp.CALL_RESPONSE_ACTION_KEY", "ConstantApp.CALL_CANCEL_ACTION");
+          cancelCallAction.putExtra("ACTION_TYPE", "CANCEL_CALL");
+          cancelCallAction.setAction("CANCEL_CALL");
+          sendBroadcast(cancelCallAction);
+        }
+        return;
       }
 
       if (!isIsolateRunning.get()) {
@@ -139,12 +149,14 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
 
 
   void startCall(RemoteMessage remoteMessage) {
-    String callInfo = null;
-    String callFrom = null;
+    String callInfo = "null";
+    String callFrom = "null";
+    String callId = "null";
     try {
-      JSONObject jsonObject = new JSONObject(remoteMessage.getData().get("data"));
-      callFrom = jsonObject.getJSONObject("call_data").getString("from");
-      callInfo = new JSONObject().put("call_id", jsonObject.getInt("call_id")).put("from", callFrom).toString();
+      JSONObject dataJson = new JSONObject(remoteMessage.getData().get("data"));
+      callFrom = dataJson.getJSONObject("call_data").getString("from");
+      callId = dataJson.getString("call_id");
+      callInfo = new JSONObject().put("call_id", callId).put("from", callFrom).toString();
     } catch (Exception err) {
       Log.d("Error", err.toString());
     }
@@ -155,6 +167,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
       Bundle mBundle = new Bundle();
       mBundle.putString("inititator", callFrom);
       mBundle.putString("call_info", callInfo);
+      mBundle.putString("call_id", callId);
       serviceIntent.putExtras(mBundle);
       ContextCompat.startForegroundService(getApplicationContext(), serviceIntent);
 

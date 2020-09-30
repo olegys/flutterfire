@@ -1,7 +1,8 @@
 package io.flutter.plugins.firebasemessaging;
 
-import io.flutter.plugin.common.MethodChannel;
 import java.util.concurrent.CountDownLatch;
+
+import io.flutter.plugin.common.MethodChannel;
 
 public class LatchResult {
 
