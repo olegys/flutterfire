@@ -110,15 +110,14 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
       if (remoteMessage.getData().containsKey("voip") &&remoteMessage.getData().get("voip").equals("true") ) {
         String type = "";
         if(remoteMessage.getData().containsKey("type")){
-           type = remoteMessage.getData().get("type");
+          type = remoteMessage.getData().get("type");
         }
         if (type.equals("initWebCall")) {
           startCall(remoteMessage);
-        } else if(type.equals("callAnswer") || type.equals("callEnd")){
+        }
+
+        else if(type.equals("callAnswer") || type.equals("callEnd")){
           Intent cancelCallAction = new Intent(this, io.flutter.plugins.firebasemessaging.nexel.CallNotificationActionReceiver.class);
-          cancelCallAction.putExtra("ConstantApp.CALL_RESPONSE_ACTION_KEY", "ConstantApp.CALL_CANCEL_ACTION");
-          cancelCallAction.putExtra("ACTION_TYPE", "CANCEL_CALL");
-          cancelCallAction.setAction("CANCEL_CALL");
           sendBroadcast(cancelCallAction);
         }
         return;
