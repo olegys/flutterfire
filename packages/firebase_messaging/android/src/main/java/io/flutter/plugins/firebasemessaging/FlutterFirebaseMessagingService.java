@@ -116,10 +116,10 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
           startCall(remoteMessage);
         }
 
-        else if(type.equals("callAnswer") || type.equals("callEnd")){
-          Intent cancelCallAction = new Intent(this, io.flutter.plugins.firebasemessaging.nexel.CallNotificationActionReceiver.class);
-          sendBroadcast(cancelCallAction);
-        }
+//        else if(type.equals("callAnswer") || type.equals("callEnd")){
+//          Intent cancelCallAction = new Intent(this, io.flutter.plugins.firebasemessaging.nexel.CallNotificationActionReceiver.class);
+//          sendBroadcast(cancelCallAction);
+//        }
         return;
       }
 
