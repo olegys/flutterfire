@@ -60,18 +60,15 @@ public class CallNotificationActionReceiver extends BroadcastReceiver {
       SharedPreferences sharedPref = context.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE);
       String token = sharedPref.getString("flutter.USER_AUTH_TOKEN", "");
 
-      Log.e("########", "Receive CANCEL_CALL: with token " +token);
 
 
       ApiManager.getInstance().getCallForId("Bearer "+token,callId).enqueue(new Callback<ResponseBody>() {
         @Override
         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-          Log.e("######", "onResponse: "+response.body());
         }
 
         @Override
         public void onFailure(Call<ResponseBody> call, Throwable t) {
-          Log.e("######", "onFailure: "+t.getLocalizedMessage());
 
         }
       });
@@ -82,13 +79,18 @@ public class CallNotificationActionReceiver extends BroadcastReceiver {
 
       if (checkAppPermissions()) {
         Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
-        intent.putExtra("route", "/splash?" + callInfo+"&answered=true");
+        intent.setAction(Intent.ACTION_RUN);
+//        intent.putExtra("route", "/splash?" + callInfo+"&answered=true");
+        intent.putExtra("call_info",  callInfo+"&answered=true");
         context.startActivity(intent);
 //        intentCallReceive.putExtra("Call", "incoming");
 //        intentCallReceive.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
       } else {
         Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
-        intent.putExtra("route", "/splash?" + callInfo+"&answered=true");
+        intent.setAction(Intent.ACTION_RUN);
+//        intent.putExtra("route", "/splash?" + callInfo+"&answered=true");
+        intent.putExtra("call_info",  callInfo+"&answered=true");
+
         context.startActivity(intent);
 
       }
@@ -96,7 +98,9 @@ public class CallNotificationActionReceiver extends BroadcastReceiver {
 
       // show ringing activity when phone is locked
       Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
-      intent.putExtra("route", "/splash?" + callInfo+"&answered=false");
+      intent.setAction(Intent.ACTION_RUN);
+//      intent.putExtra("route", "/splash?" + callInfo+"&answered=false");
+      intent.putExtra("call_info",  callInfo+"&answered=true");
       context.startActivity(intent);
 
 
