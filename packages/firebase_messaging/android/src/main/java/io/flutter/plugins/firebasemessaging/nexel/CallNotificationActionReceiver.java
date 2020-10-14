@@ -100,7 +100,7 @@ public class CallNotificationActionReceiver extends BroadcastReceiver {
       Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
       intent.setAction(Intent.ACTION_RUN);
 //      intent.putExtra("route", "/splash?" + callInfo+"&answered=false");
-      intent.putExtra("call_info",  callInfo+"&answered=true");
+      intent.putExtra("call_info",  callInfo+"&answered=false");
       context.startActivity(intent);
 
 
