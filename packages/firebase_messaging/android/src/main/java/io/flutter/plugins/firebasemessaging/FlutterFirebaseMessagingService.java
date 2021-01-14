@@ -152,7 +152,9 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
     String callId = "null";
     try {
       JSONObject dataJson = new JSONObject(remoteMessage.getData().get("data"));
-      callFrom = dataJson.getJSONObject("call_data").getString("from");
+      String[] arr = dataJson.getJSONObject("call_data").getString("caller_caller_id_number").split("<");
+
+      callFrom = arr.length == 2?arr[0] : arr[1];
       callId = dataJson.getString("call_id");
       callInfo = new JSONObject().put("call_id", callId).put("from", callFrom).toString();
     } catch (Exception err) {
