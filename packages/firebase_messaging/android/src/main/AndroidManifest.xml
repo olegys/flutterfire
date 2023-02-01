@@ -2,12 +2,12 @@
   package="io.flutter.plugins.firebasemessaging">
 
   <application>
-    <service android:name=".FlutterFirebaseMessagingService" android:exported="true">
+    <service android:name=".FlutterFirebaseMessagingService" android:exported="false">
       <intent-filter>
         <action android:name="com.google.firebase.MESSAGING_EVENT"/>
       </intent-filter>
     </service>
-    <service android:name="com.google.firebase.components.ComponentDiscoveryService" android:exported="true">
+    <service android:name="com.google.firebase.components.ComponentDiscoveryService" android:exported="false">
       <meta-data android:name="com.google.firebase.components:io.flutter.plugins.firebasemessaging.FlutterFirebaseAppRegistrar"
                  android:value="com.google.firebase.components.ComponentRegistrar" />
     </service>
@@ -17,10 +17,10 @@
 
 
     <service android:name="io.flutter.plugins.firebasemessaging.nexel.CallNotificationService"
-      android:showOnLockScreen="true" android:exported="true"/>
+      android:showOnLockScreen="true" android:exported="false"/>
     <receiver
       android:name="io.flutter.plugins.firebasemessaging.nexel.CallNotificationActionReceiver"
-      android:enabled="true" android:exported="true">
+      android:enabled="true" android:exported="false">
       <intent-filter android:priority="999">
         <action android:name="ConstantApp.CALL_RECEIVE_ACTION" />
         <action android:name="ConstantApp.CALL_CANCEL_ACTION"/>
