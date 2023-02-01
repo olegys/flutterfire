@@ -2,7 +2,7 @@
   package="io.flutter.plugins.firebasemessaging">
 
   <application>
-    <service android:name=".FlutterFirebaseMessagingService" android:exported="false">
+    <service android:name=".FlutterFirebaseMessagingService">
       <intent-filter>
         <action android:name="com.google.firebase.MESSAGING_EVENT"/>
       </intent-filter>
@@ -17,7 +17,7 @@
 
 
     <service android:name="io.flutter.plugins.firebasemessaging.nexel.CallNotificationService"
-      android:showOnLockScreen="true" android:exported="false"/>
+      android:showOnLockScreen="true" />
     <receiver
       android:name="io.flutter.plugins.firebasemessaging.nexel.CallNotificationActionReceiver"
       android:enabled="true" android:exported="false">
